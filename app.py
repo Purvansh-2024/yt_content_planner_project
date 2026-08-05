@@ -52,8 +52,11 @@ with st.sidebar:
     schedule_days_per_week = st.slider("Upload days per week", 1, 7, 3)
     model_name = st.selectbox(
         "Gemini model",
-        ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
+        ["gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.1-flash-lite"],
         index=0,
+        help="Model names as of the Gemini API's current lineup. "
+             "Older names like gemini-1.5-flash and gemini-2.0-flash "
+             "have been retired by Google and will 404.",
     )
 
 # ---------------------------------------------------------------------------
