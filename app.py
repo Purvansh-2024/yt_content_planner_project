@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 from datetime import date, timedelta
@@ -18,13 +19,37 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
+# Background image (moodboard collage)
+# ---------------------------------------------------------------------------
+def get_base64_image(path: str) -> str | None:
+    """Load a local image and return it as a base64 string, or None if missing."""
+    if not os.path.exists(path):
+        return None
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+
+_BG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "background.jpg")
+_BG_BASE64 = get_base64_image(_BG_PATH)
+
+if _BG_BASE64:
+    # Dark overlay gradient over the collage so text/cards stay readable
+    APP_BACKGROUND_RULE = (
+        f'background: linear-gradient(rgba(10,10,10,0.72), rgba(10,10,10,0.85)), '
+        f'url("data:image/jpeg;base64,{_BG_BASE64}") center/cover fixed no-repeat;'
+    )
+else:
+    # Fallback to the flat YouTube dark color if the image isn't found
+    APP_BACKGROUND_RULE = "background-color: #0f0f0f;"
+
+# ---------------------------------------------------------------------------
 # Custom background & graphics (CSS)
 # ---------------------------------------------------------------------------
 CUSTOM_CSS = """
 <style>
-/* App-wide background — YouTube's own dark-theme page color */
+/* App-wide background — moodboard collage with a dark overlay */
 .stApp {
-    background-color: #0f0f0f;
+    __APP_BACKGROUND__
 }
 
 /* Make default text readable on dark background */
@@ -129,6 +154,7 @@ div[data-testid="stForm"] {
 }
 </style>
 """
+CUSTOM_CSS = CUSTOM_CSS.replace("__APP_BACKGROUND__", APP_BACKGROUND_RULE)
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
