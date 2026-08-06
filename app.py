@@ -1,13 +1,13 @@
 import json
 import os
 from datetime import date, timedelta
-
+ 
 import pandas as pd
 import streamlit as st
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-
+ 
 # ---------------------------------------------------------------------------
 # Page config
 # ---------------------------------------------------------------------------
@@ -16,117 +16,142 @@ st.set_page_config(
     page_icon="🎬",
     layout="wide",
 )
-
+ 
 # ---------------------------------------------------------------------------
 # Custom background & graphics (CSS)
 # ---------------------------------------------------------------------------
 CUSTOM_CSS = """
 <style>
-/* App-wide gradient background */
+/* App-wide background — YouTube's own dark-theme page color */
 .stApp {
-    background: linear-gradient(160deg, #0f0c29 0%, #302b63 45%, #24243e 100%);
+    background-color: #0f0f0f;
 }
-
-/* Make default text readable on the dark gradient */
+ 
+/* Make default text readable on dark background */
 .stApp, .stApp p, .stApp li, .stApp label, .stApp span {
-    color: #f1f1f6;
+    color: #f1f1f1;
 }
-
-/* Hero banner */
+ 
+/* Hero banner — YouTube header bar styling with a play-button mark */
 .hero-banner {
-    background: linear-gradient(90deg, #ff512f 0%, #dd2476 50%, #7b2ff7 100%);
-    padding: 2.2rem 2rem;
-    border-radius: 18px;
+    background-color: #0f0f0f;
+    border-bottom: 1px solid #272727;
+    padding: 1.4rem 0.2rem 1.6rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.hero-banner .play-mark {
+    width: 46px;
+    height: 32px;
+    background-color: #ff0000;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.hero-banner .play-mark svg {
+    width: 16px;
+    height: 16px;
 }
 .hero-banner h1 {
     color: #ffffff;
-    font-size: 2.2rem;
-    margin-bottom: 0.3rem;
+    font-size: 1.6rem;
+    margin: 0 0 2px 0;
+    font-weight: 600;
 }
 .hero-banner p {
-    color: #f5e9ff;
-    font-size: 1.05rem;
+    color: #aaaaaa;
+    font-size: 0.95rem;
     margin: 0;
 }
-
-/* Glassy content cards */
+ 
+/* Content cards — YouTube's card gray (#212121) */
 .glass-card {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(6px);
-    border-radius: 14px;
+    background-color: #212121;
+    border: 1px solid #303030;
+    border-radius: 12px;
     padding: 1.4rem 1.6rem;
     margin-bottom: 1.2rem;
 }
 .glass-card h3 {
     margin-top: 0;
-    color: #ffd479;
+    color: #ff4d4d;
 }
-
+ 
 /* Comparison table styling */
 .compare-table {
     width: 100%;
     border-collapse: collapse;
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
     font-size: 0.95rem;
 }
 .compare-table th {
-    background: rgba(255,255,255,0.12);
-    color: #ffd479;
+    background-color: #272727;
+    color: #ff4d4d;
     text-align: left;
     padding: 10px 14px;
 }
 .compare-table td {
     padding: 10px 14px;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    border-top: 1px solid #303030;
+    background-color: #181818;
 }
 .compare-table tr:nth-child(even) td {
-    background: rgba(255,255,255,0.04);
+    background-color: #1c1c1c;
 }
 .compare-table td.ai-col {
-    color: #9dffb0;
+    color: #6fdc8c;
     font-weight: 500;
 }
 .compare-table td.manual-col {
-    color: #ffb0b0;
+    color: #ff8a8a;
 }
-
-/* Sidebar tint */
+ 
+/* Sidebar tint — YouTube's slightly darker chrome */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1c1b33 0%, #2b2650 100%);
+    background-color: #0f0f0f;
+    border-right: 1px solid #272727;
 }
 section[data-testid="stSidebar"] * {
-    color: #f1f1f6 !important;
+    color: #f1f1f1 !important;
 }
-
+ 
 /* Form container */
 div[data-testid="stForm"] {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
+    background-color: #212121;
+    border: 1px solid #303030;
+    border-radius: 12px;
     padding: 1.5rem 1.8rem;
 }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
-
+ 
 # ---------------------------------------------------------------------------
 # Hero banner
 # ---------------------------------------------------------------------------
 st.markdown(
     """
     <div class="hero-banner">
-        <h1>🎬 AI YouTube Content Planner</h1>
-        <p>LangChain + Gemini agent that generates video ideas, SEO titles,
-        thumbnail concepts, and a weekly upload schedule for your channel.</p>
+        <div class="play-mark">
+            <svg viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        </div>
+        <div>
+            <h1>AI YouTube Content Planner</h1>
+            <p>LangChain + Gemini agent that generates video ideas, SEO titles,
+            thumbnail concepts, and a weekly upload schedule for your channel.</p>
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
-
+ 
 # ---------------------------------------------------------------------------
 # What problem it solves
 # ---------------------------------------------------------------------------
@@ -149,7 +174,7 @@ with st.expander("💡 What problem does this tool solve?", expanded=False):
         """,
         unsafe_allow_html=True,
     )
-
+ 
     st.markdown(
         """
         <table class="compare-table">
@@ -197,7 +222,7 @@ with st.expander("💡 What problem does this tool solve?", expanded=False):
         """,
         unsafe_allow_html=True,
     )
-
+ 
 # ---------------------------------------------------------------------------
 # API key handling
 # ---------------------------------------------------------------------------
@@ -208,8 +233,8 @@ def get_api_key() -> str | None:
     if os.environ.get("GOOGLE_API_KEY"):
         return os.environ["GOOGLE_API_KEY"]
     return None
-
-
+ 
+ 
 with st.sidebar:
     st.header("⚙️ Settings")
     api_key = get_api_key()
@@ -221,7 +246,7 @@ with st.sidebar:
         )
     else:
         st.success("API key loaded from secrets.")
-
+ 
     st.divider()
     num_ideas = st.slider("Number of video ideas", min_value=3, max_value=15, value=8)
     schedule_days_per_week = st.slider("Upload days per week", 1, 7, 3)
@@ -233,7 +258,7 @@ with st.sidebar:
              "Older names like gemini-1.5-flash and gemini-2.0-flash "
              "have been retired by Google and will 404.",
     )
-
+ 
 # ---------------------------------------------------------------------------
 # Input form
 # ---------------------------------------------------------------------------
@@ -258,23 +283,23 @@ with st.form("planner_form"):
             "Anything else? (optional)",
             placeholder="e.g. focus on short-form Shorts content",
         )
-
+ 
     submitted = st.form_submit_button("✨ Generate Content Plan", use_container_width=True)
-
+ 
 # ---------------------------------------------------------------------------
 # LangChain setup
 # ---------------------------------------------------------------------------
 PROMPT_TEMPLATE = """You are an expert YouTube content strategist and SEO specialist.
-
+ 
 Channel niche: {niche}
 Target audience: {audience}
 Tone/style: {tone}
 Extra notes: {extra_notes}
-
+ 
 Generate a YouTube content plan with exactly {num_ideas} video ideas.
-
+ 
 Return ONLY valid JSON (no markdown fences, no commentary) matching this schema:
-
+ 
 {{
   "channel_summary": "1-2 sentence summary of the content strategy for this channel",
   "video_ideas": [
@@ -287,11 +312,11 @@ Return ONLY valid JSON (no markdown fences, no commentary) matching this schema:
     }}
   ]
 }}
-
+ 
 Make each idea distinct, specific to the niche, and genuinely useful — avoid generic filler ideas.
 """
-
-
+ 
+ 
 def build_chain(key: str, model: str):
     llm = ChatGoogleGenerativeAI(
         model=model,
@@ -301,8 +326,8 @@ def build_chain(key: str, model: str):
     prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     parser = JsonOutputParser()
     return prompt | llm | parser
-
-
+ 
+ 
 def build_schedule(video_ideas: list[dict], days_per_week: int) -> pd.DataFrame:
     upload_dow = {
         1: [0],
@@ -313,7 +338,7 @@ def build_schedule(video_ideas: list[dict], days_per_week: int) -> pd.DataFrame:
         6: [0, 1, 2, 3, 4, 5],
         7: [0, 1, 2, 3, 4, 5, 6],
     }[days_per_week]
-
+ 
     rows = []
     today = date.today()
     # find the next Monday to start a clean week
@@ -335,8 +360,8 @@ def build_schedule(video_ideas: list[dict], days_per_week: int) -> pd.DataFrame:
             idx += 1
         d += timedelta(days=7)
     return pd.DataFrame(rows)
-
-
+ 
+ 
 # ---------------------------------------------------------------------------
 # Generate
 # ---------------------------------------------------------------------------
@@ -359,18 +384,18 @@ if submitted:
                 st.session_state["plan"] = result
             except Exception as e:
                 st.error(f"Something went wrong generating the plan: {e}")
-
+ 
 # ---------------------------------------------------------------------------
 # Display results
 # ---------------------------------------------------------------------------
 if "plan" in st.session_state:
     plan = st.session_state["plan"]
-
+ 
     st.subheader("📋 Strategy Summary")
     st.info(plan.get("channel_summary", ""))
-
+ 
     ideas = plan.get("video_ideas", [])
-
+ 
     st.subheader("💡 Video Ideas")
     for i, idea in enumerate(ideas, start=1):
         with st.expander(f"{i}. {idea.get('seo_title', idea.get('video_idea', 'Untitled'))}"):
@@ -379,11 +404,11 @@ if "plan" in st.session_state:
             st.markdown(f"**SEO Title:** {idea.get('seo_title', '')}")
             st.markdown(f"**SEO Tags:** {', '.join(idea.get('seo_tags', []))}")
             st.markdown(f"**Thumbnail Concept:** {idea.get('thumbnail_concept', '')}")
-
+ 
     st.subheader("🗓️ Suggested Upload Schedule")
     schedule_df = build_schedule(ideas, schedule_days_per_week)
     st.dataframe(schedule_df, use_container_width=True, hide_index=True)
-
+ 
     st.subheader("⬇️ Export")
     col1, col2 = st.columns(2)
     with col1:
