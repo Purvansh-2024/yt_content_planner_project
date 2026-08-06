@@ -17,11 +17,186 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("🎬 AI YouTube Content Planner")
-st.caption(
-    "LangChain + Gemini agent that generates video ideas, SEO titles, "
-    "thumbnail concepts, and a weekly upload schedule for your channel."
+# ---------------------------------------------------------------------------
+# Custom background & graphics (CSS)
+# ---------------------------------------------------------------------------
+CUSTOM_CSS = """
+<style>
+/* App-wide gradient background */
+.stApp {
+    background: linear-gradient(160deg, #0f0c29 0%, #302b63 45%, #24243e 100%);
+}
+
+/* Make default text readable on the dark gradient */
+.stApp, .stApp p, .stApp li, .stApp label, .stApp span {
+    color: #f1f1f6;
+}
+
+/* Hero banner */
+.hero-banner {
+    background: linear-gradient(90deg, #ff512f 0%, #dd2476 50%, #7b2ff7 100%);
+    padding: 2.2rem 2rem;
+    border-radius: 18px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+.hero-banner h1 {
+    color: #ffffff;
+    font-size: 2.2rem;
+    margin-bottom: 0.3rem;
+}
+.hero-banner p {
+    color: #f5e9ff;
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+/* Glassy content cards */
+.glass-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(6px);
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.2rem;
+}
+.glass-card h3 {
+    margin-top: 0;
+    color: #ffd479;
+}
+
+/* Comparison table styling */
+.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    font-size: 0.95rem;
+}
+.compare-table th {
+    background: rgba(255,255,255,0.12);
+    color: #ffd479;
+    text-align: left;
+    padding: 10px 14px;
+}
+.compare-table td {
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+.compare-table tr:nth-child(even) td {
+    background: rgba(255,255,255,0.04);
+}
+.compare-table td.ai-col {
+    color: #9dffb0;
+    font-weight: 500;
+}
+.compare-table td.manual-col {
+    color: #ffb0b0;
+}
+
+/* Sidebar tint */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #1c1b33 0%, #2b2650 100%);
+}
+section[data-testid="stSidebar"] * {
+    color: #f1f1f6 !important;
+}
+
+/* Form container */
+div[data-testid="stForm"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem 1.8rem;
+}
+</style>
+"""
+st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# Hero banner
+# ---------------------------------------------------------------------------
+st.markdown(
+    """
+    <div class="hero-banner">
+        <h1>🎬 AI YouTube Content Planner</h1>
+        <p>LangChain + Gemini agent that generates video ideas, SEO titles,
+        thumbnail concepts, and a weekly upload schedule for your channel.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
+
+# ---------------------------------------------------------------------------
+# What problem it solves
+# ---------------------------------------------------------------------------
+with st.expander("💡 What problem does this tool solve?", expanded=False):
+    st.markdown(
+        """
+        <div class="glass-card">
+        <h3>The problem</h3>
+        <p>Planning a YouTube channel manually means juggling video ideas,
+        SEO research, thumbnail concepts, and an upload calendar across
+        spreadsheets, notes apps, and scattered chats — a process that can
+        eat up hours every week, especially for beginner or solo creators
+        who don't have a strategist or an editorial team.</p>
+        <p>This app collapses that entire workflow into one form: tell it
+        your niche, audience, tone, and upload cadence, and it returns a
+        complete, structured content plan in seconds — ideas, SEO-ready
+        titles and tags, thumbnail concepts, and a calendar — ready to
+        export as JSON or CSV.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <table class="compare-table">
+            <tr>
+                <th>Step</th>
+                <th>Traditional / Manual Planning</th>
+                <th>AI YouTube Content Planner</th>
+            </tr>
+            <tr>
+                <td>Idea generation</td>
+                <td class="manual-col">Brainstorm alone or in a group; often runs dry</td>
+                <td class="ai-col">Niche-specific ideas generated instantly, at any volume</td>
+            </tr>
+            <tr>
+                <td>SEO titles &amp; tags</td>
+                <td class="manual-col">Manual keyword research across multiple tools</td>
+                <td class="ai-col">SEO-optimized titles and tags generated with each idea</td>
+            </tr>
+            <tr>
+                <td>Thumbnail concepts</td>
+                <td class="manual-col">Designed from scratch with no starting direction</td>
+                <td class="ai-col">Concrete visual concept suggested for every video</td>
+            </tr>
+            <tr>
+                <td>Upload schedule</td>
+                <td class="manual-col">Built by hand in a spreadsheet or calendar app</td>
+                <td class="ai-col">Auto-generated calendar based on chosen upload cadence</td>
+            </tr>
+            <tr>
+                <td>Time required</td>
+                <td class="manual-col">Hours per planning session</td>
+                <td class="ai-col">Under a minute per full content plan</td>
+            </tr>
+            <tr>
+                <td>Cost</td>
+                <td class="manual-col">Strategist / premium SEO tool subscriptions</td>
+                <td class="ai-col">Free — bring your own Gemini API key</td>
+            </tr>
+            <tr>
+                <td>Output format</td>
+                <td class="manual-col">Scattered across docs, sheets, and notes</td>
+                <td class="ai-col">One export: downloadable JSON &amp; CSV</td>
+            </tr>
+        </table>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ---------------------------------------------------------------------------
 # API key handling
