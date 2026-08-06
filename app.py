@@ -22,20 +22,20 @@ st.set_page_config(
 # ---------------------------------------------------------------------------
 CUSTOM_CSS = """
 <style>
-/* App-wide background — soft off-white/gray */
+/* App-wide background — YouTube's own dark-theme page color */
 .stApp {
-    background-color: #f4f4f4;
+    background-color: #0f0f0f;
 }
 
-/* Default text colors for light background */
+/* Make default text readable on dark background */
 .stApp, .stApp p, .stApp li, .stApp label, .stApp span {
-    color: #1a1a1a;
+    color: #f1f1f1;
 }
 
-/* Hero banner — light bar with a play-button mark */
+/* Hero banner — YouTube header bar styling with a play-button mark */
 .hero-banner {
-    background-color: #f4f4f4;
-    border-bottom: 1px solid #e0e0e0;
+    background-color: #0f0f0f;
+    border-bottom: 1px solid #272727;
     padding: 1.4rem 0.2rem 1.6rem;
     margin-bottom: 1.5rem;
     display: flex;
@@ -57,28 +57,28 @@ CUSTOM_CSS = """
     height: 16px;
 }
 .hero-banner h1 {
-    color: #1a1a1a;
+    color: #ffffff;
     font-size: 1.6rem;
     margin: 0 0 2px 0;
     font-weight: 600;
 }
 .hero-banner p {
-    color: #666666;
+    color: #aaaaaa;
     font-size: 0.95rem;
     margin: 0;
 }
 
-/* Content cards — soft off-white with a light border */
+/* Content cards — YouTube's card gray (#212121) */
 .glass-card {
-    background-color: #fafafa;
-    border: 1px solid #e5e5e5;
+    background-color: #212121;
+    border: 1px solid #303030;
     border-radius: 12px;
     padding: 1.4rem 1.6rem;
     margin-bottom: 1.2rem;
 }
 .glass-card h3 {
     margin-top: 0;
-    color: #cc0000;
+    color: #ff4d4d;
 }
 
 /* Comparison table styling */
@@ -90,40 +90,40 @@ CUSTOM_CSS = """
     font-size: 0.95rem;
 }
 .compare-table th {
-    background-color: #ececec;
-    color: #cc0000;
+    background-color: #272727;
+    color: #ff4d4d;
     text-align: left;
     padding: 10px 14px;
 }
 .compare-table td {
     padding: 10px 14px;
-    border-top: 1px solid #e5e5e5;
-    background-color: #ffffff;
+    border-top: 1px solid #303030;
+    background-color: #181818;
 }
 .compare-table tr:nth-child(even) td {
-    background-color: #fafafa;
+    background-color: #1c1c1c;
 }
 .compare-table td.ai-col {
-    color: #1a7a3a;
+    color: #6fdc8c;
     font-weight: 500;
 }
 .compare-table td.manual-col {
-    color: #b03030;
+    color: #ff8a8a;
 }
 
-/* Sidebar tint */
+/* Sidebar tint — YouTube's slightly darker chrome */
 section[data-testid="stSidebar"] {
-    background-color: #f4f4f4;
-    border-right: 1px solid #e0e0e0;
+    background-color: #0f0f0f;
+    border-right: 1px solid #272727;
 }
 section[data-testid="stSidebar"] * {
-    color: #1a1a1a !important;
+    color: #f1f1f1 !important;
 }
 
 /* Form container */
 div[data-testid="stForm"] {
-    background-color: #ffffff;
-    border: 1px solid #e5e5e5;
+    background-color: #212121;
+    border: 1px solid #303030;
     border-radius: 12px;
     padding: 1.5rem 1.8rem;
 }
